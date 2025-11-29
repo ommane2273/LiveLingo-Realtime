@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>LiveLingo Modern – Chat, Video & Transcripts</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* (kept your original styles mostly unchanged) */
+    body { font-family: 'Segoe UI', 'Roboto', Arial, sans-serif; background: linear-gradient(110deg, #e6f0ff 0%, #eafcec 100%); min-height:100vh; margin:0; }
+    .modern-header { display:flex; align-items:center; justify-content:center; gap:16px; padding:40px 0 28px 0; background:linear-gradient(90deg,#e9f6fd 55%, #eafbea 90%); box-shadow:0 8px 32px rgba(110,160,230,0.09); border-radius:0 0 28px 28px; margin-bottom:8px; }
+    .modern-header-icon { font-size:2.6em; line-height:1; }
+    .modern-header-text { font-size:2.25em; color:#29487c; font-weight:700; letter-spacing:2px; text-shadow:0 2px 20px #80c5f9a6; }
+    .modern-header-text .fancy-title { background:linear-gradient(90deg,#75ded2 60%, #77b0f5 100%); color:#24867f; padding:4px 16px; border-radius:19px; margin-left:20px; font-size:.8em; font-weight:600; box-shadow:0 2px 10px #8ad8fde4; }
+    #layout { display:flex; max-width:1400px; margin:18px auto 0 auto; gap:32px; min-height:740px; justify-content:center; }
+    #chatWindow { background:#fff; border-radius:27px; box-shadow:0 12px 38px rgba(120,160,220,0.19); flex:0 0 370px; overflow:hidden; min-width:310px; display:flex; flex-direction:column; max-height:83vh; }
+    #chatHeader { background: linear-gradient(90deg,#37bacf 70%,#6ed3c8 100%); color:#fff; font-weight:700; letter-spacing:1.2px; font-size:1.23em; padding:23px 23px; display:flex; align-items:center; gap:10px; }
+    #chatHeader img { width:36px; border-radius:50%; background:#fff6; margin-right:7px; }
+    #messages { flex:1 1 auto; background:#f6fbff; padding:20px 11px 20px 11px; overflow-y:auto; display:flex; flex-direction:column; gap:8px; font-size:1em; min-height:80px; height:33vh; }
+    .bubbleGroup{ display:flex; flex-direction:column; gap:3px; }
+    .bubble-row{ display:flex; flex-direction:row; align-items:flex-end; }
+    .chat-bubble{ display:inline-block; padding:13px 18px 11px 17px; margin:4px 0; font-size:1.13em; border-radius:22px 7px 20px 22px; word-break:break-word; max-width:240px; background:linear-gradient(110deg,#dbf4ff 88%,#e6f9ed 100%); color:#2a6a8a; box-shadow:0 2px 10px rgba(75,120,180,0.08); border:1px solid #a3e7f7; }
+    .bubble-user{ font-size:0.92em; font-weight:600; color:#2878d6; margin-bottom:-1px; margin-left:7px; text-shadow:0px 1px 5px #f6fcff83; }
+    .chat-translation { display:block; color:#6079a8; font-size:0.95em; font-style:italic; margin-top:7px; }
+    #chatInputBar { padding:12px 15px 10px 14px; background:#e9f7fb; border-bottom-left-radius:27px; border-bottom-right-radius:27px; border-top:1.5px solid #beeaf5; width:100%; box-sizing:border-box; }
+    #chatForm{ display:flex; gap:10px; width:100%; box-sizing:border-box; align-items:center; flex-wrap:nowrap; }
+    #chatForm select, #chatForm button, #chatForm input[type="text"]{ border-radius:7px; border:1.2px solid #bedff0; background:#f5fafd; padding:7px; font-size:.99em;}
+    #chatForm input#chatInput{ flex:1 1 120px; font-size:1.07em; border-radius:9px; border:1.4px solid #ceedf3; background:#fcffff; padding:12px 10px 11px 10px; outline:none; min-width:0; width:100%; color:#12202b; }
+    #chatForm input::placeholder{ color:#9aa3ad; }
+    #chatSendBtn{ background:linear-gradient(90deg,#b7e7f9 40%, #b6efcf 100%); color:#31546e; font-weight:600; border:none; cursor:pointer; border-radius:7px; padding:0 13px; height:42px; }
+    .lang-row{ display:flex; gap:8px; align-items:center; margin-top:10px; padding:0 6px 8px 0; }
+    .lang-row input[type="text"]{ flex:1 1 auto; padding:9px 10px; border-radius:7px; border:1.2px solid #bedff0; background:#fff; font-weight:500; color:#16344a; min-width:0; }
+    .lang-label{ font-size:0.95em; color:#1f5c6f; font-weight:600; margin-right:6px; }
+    #rightWindow{ flex:1 1 640px; min-width:300px; display:flex; flex-direction:column; gap:28px; }
+    #videoSection{ display:flex; justify-content:center; gap:40px; align-items:flex-start; }
+    video{ width:302px; max-width:94vw; border-radius:17px; box-shadow:0 4px 14px #7ba1ec42; border:2px solid #a7d3fd; background:#ebf6ff; }
+    #controls{ text-align:left; margin:0 0 0 13px; }
+    #transcripts{ display:flex; gap:19px; flex-wrap:wrap; }
+    .transcriptBox{ flex:1 1 230px; background:#f7fafe; border-radius:15px; box-shadow:0 3px 13px #91b8df22; border:1.2px solid #cbe8f2; padding:12px 15px; min-height:75px; display:flex; flex-direction:column; }
+    .transOrig{ color:#25396a; font-size:1.07em; font-weight:500; }
+    .transTrans{ color:#29c013; font-style:italic; font-size:0.98em; margin-top:4px; }
+    .transcriptSel{ width:91%; margin:2px 0 5px 0; background:#e8f1ff; border-radius:6px; border:1px solid #a5e2bf; color:#20625a; font-size:0.98em; font-weight:500; padding:5px; }
+  </style>
+</head>
+<body>
+<div class="modern-header">
+  <span class="modern-header-icon">🌍</span>
+  <span class="modern-header-text">LiveLingo Modern <span class="fancy-title">– Chat, Video & Transcripts</span></span>
+</div>
+
+<div id="layout">
+  <div id="chatWindow">
+    <div id="chatHeader">
+      <img src="https://ui-avatars.com/api/?name=Lingo&background=ace9e3&color=1e3651" alt="Chat">
+      LiveLingo Chat
+    </div>
+
+    <div id="messages" aria-live="polite"></div>
+
+    <div id="chatInputBar">
+      <form id="chatForm" autocomplete="off">
+        <select id="user"><option value="User A">User A</option><option value="User B">User B</option></select>
+
+        <input id="chatInput" placeholder="Type a message..." autocomplete="off"/>
+
+        <button type="submit" id="chatSendBtn">Send</button>
+      </form>
+
+      <div class="lang-row" aria-hidden="false">
+        <div class="lang-label">Language</div>
+        <input id="lang" list="languages" placeholder="Type or pick language (e.g. English — en)" />
+      </div>
+
+      <datalist id="languages"></datalist>
+    </div>
+  </div>
+
+  <div id="rightWindow">
+    <div id="videoSection">
+      <video id="localVideo" autoplay playsinline muted></video>
+      <video id="remoteVideo" autoplay playsinline></video>
+    </div>
+
+    <div id="controls">
+      <button id="toggleAudio" class="muteBtn">Mute Mic</button>
+      <button id="toggleVideo" class="muteBtn">Hide Video</button>
+    </div>
+
+    <div id="transcripts">
+      <div class="transcriptBox" id="transcriptUserA">
+        <input id="transcriptLangA" list="languages" class="transcriptSel" placeholder="Language (User A)" />
+        <span class="transOrig">User A Transcript:</span>
+        <span class="transTrans" id="transUserATrans"></span>
+      </div>
+      <div class="transcriptBox" id="transcriptUserB">
+        <input id="transcriptLangB" list="languages" class="transcriptSel" placeholder="Language (User B)" />
+        <span class="transOrig">User B Transcript:</span>
+        <span class="transTrans" id="transUserBTrans"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+/* ---------- languages list (name + ISO-like code) ---------- */
+const LANGUAGES = [
+  { code: "en", name: "English" },
+  { code: "zh", name: "Chinese (Mandarin)" },
+  { code: "es", name: "Spanish" },
+  { code: "ar", name: "Arabic" },
+  { code: "hi", name: "Hindi" },
+  { code: "bn", name: "Bengali" },
+  { code: "pt", name: "Portuguese" },
+  { code: "ru", name: "Russian" },
+  { code: "ja", name: "Japanese" },
+  { code: "pa", name: "Punjabi" },
+  { code: "de", name: "German" },
+  { code: "jv", name: "Javanese" },
+  { code: "te", name: "Telugu" },
+  { code: "ko", name: "Korean" },
+  { code: "fr", name: "French" },
+  { code: "mr", name: "Marathi" },
+  { code: "tr", name: "Turkish" },
+  { code: "vi", name: "Vietnamese" },
+  { code: "ta", name: "Tamil" },
+  { code: "ur", name: "Urdu" },
+  { code: "it", name: "Italian" },
+  { code: "yue", name: "Cantonese" },
+  { code: "th", name: "Thai" },
+  { code: "gu", name: "Gujarati" },
+  { code: "pl", name: "Polish" },
+  { code: "kn", name: "Kannada" },
+  { code: "fa", name: "Persian (Farsi)" },
+  { code: "ml", name: "Malayalam" },
+  { code: "or", name: "Odia (Oriya)" },
+  { code: "su", name: "Sundanese" },
+  { code: "my", name: "Burmese" },
+  { code: "el", name: "Greek" },
+  { code: "hu", name: "Hungarian" },
+  { code: "sv", name: "Swedish" },
+  { code: "cs", name: "Czech" },
+  { code: "ro", name: "Romanian" },
+  { code: "nl", name: "Dutch" },
+  { code: "az", name: "Azerbaijani" },
+  { code: "bg", name: "Bulgarian" },
+  { code: "sr", name: "Serbian" },
+  { code: "he", name: "Hebrew" },
+  { code: "fi", name: "Finnish" },
+  { code: "da", name: "Danish" },
+  { code: "no", name: "Norwegian" },
+  { code: "sk", name: "Slovak" },
+  { code: "lt", name: "Lithuanian" },
+  { code: "lv", name: "Latvian" },
+  { code: "et", name: "Estonian" },
+  { code: "hr", name: "Croatian" },
+  { code: "sl", name: "Slovenian" },
+  { code: "af", name: "Afrikaans" },
+  { code: "sw", name: "Swahili" },
+  { code: "zu", name: "Zulu" },
+  { code: "xh", name: "Xhosa" },
+  { code: "am", name: "Amharic" },
+  { code: "yo", name: "Yoruba" },
+  { code: "ig", name: "Igbo" },
+  { code: "ha", name: "Hausa" },
+  { code: "ne", name: "Nepali" },
+  { code: "si", name: "Sinhala" },
+  { code: "km", name: "Khmer" },
+  { code: "lo", name: "Lao" },
+  { code: "mn", name: "Mongolian" },
+  { code: "kk", name: "Kazakh" },
+  { code: "uz", name: "Uzbek" },
+  { code: "ps", name: "Pashto" },
+  { code: "ku", name: "Kurdish" },
+  { code: "hy", name: "Armenian" },
+  { code: "ka", name: "Georgian" },
+  { code: "mt", name: "Maltese" },
+  { code: "eu", name: "Basque" },
+  { code: "ca", name: "Catalan" },
+  { code: "gl", name: "Galician" },
+  { code: "ga", name: "Irish" },
+  { code: "cy", name: "Welsh" },
+  { code: "br", name: "Breton" },
+  { code: "lb", name: "Luxembourgish" },
+  { code: "fy", name: "Frisian" },
+  { code: "eo", name: "Esperanto" },
+  { code: "ms", name: "Malay" },
+  { code: "id", name: "Indonesian" },
+  { code: "tl", name: "Tagalog / Filipino" },
+  { code: "mg", name: "Malagasy" }
+];
+
+function populateLanguageDatalist() {
+  const dl = document.getElementById('languages');
+  dl.innerHTML = '';
+  for (const l of LANGUAGES) {
+    const option = document.createElement('option');
+    option.value = `${l.name} — ${l.code}`;
+    dl.appendChild(option);
+  }
+}
+
+function getLangCodeFromInput(input) {
+  if (!input) return '';
+  const normalized = input.trim().toLowerCase();
+  for (const l of LANGUAGES) if (normalized === l.code.toLowerCase()) return l.code;
+  const parts = normalized.split(/[-—]/).map(p => p.trim());
+  if (parts.length === 2) {
+    const codePart = parts[1];
+    const found = LANGUAGES.find(x => x.code.toLowerCase() === codePart.toLowerCase());
+    if (found) return found.code;
+  }
+  const byName = LANGUAGES.find(x => x.name.toLowerCase() === normalized);
+  if (byName) return byName.code;
+  const starts = LANGUAGES.find(x => x.name.toLowerCase().startsWith(normalized));
+  if (starts) return starts.code;
+  return input.trim();
+}
+
+window.onload = async () => {
+  populateLanguageDatalist();
+
+  const socket = io();
+  const messages = document.getElementById("messages");
+  const chatForm = document.getElementById("chatForm");
+  const chatInput = document.getElementById("chatInput");
+  const langInput = document.getElementById("lang");
+  const user = document.getElementById("user");
+  const toggleAudioBtn = document.getElementById("toggleAudio");
+  const toggleVideoBtn = document.getElementById("toggleVideo");
+  const transcriptA = document.getElementById("transcriptUserA");
+  const transcriptB = document.getElementById("transcriptUserB");
+  const transUserATrans = document.getElementById("transUserATrans");
+  const transUserBTrans = document.getElementById("transUserBTrans");
+  const transcriptLangA = document.getElementById("transcriptLangA");
+  const transcriptLangB = document.getElementById("transcriptLangB");
+
+  chatInput.style.color = "#12202b";
+  chatInput.focus();
+
+  // send messages normally (no distinct-language blocking)
+  chatForm.addEventListener("submit", function(e){
+    e.preventDefault();
+    if(chatInput.value.trim() !== ""){
+      const langCode = getLangCodeFromInput(langInput.value) || getLangCodeFromInput((user.value === "User A" ? transcriptLangA.value : transcriptLangB.value)) || "en";
+      // send optional targetLang (name) so server can translate using the other user's selection
+      const targetName = (user.value === "User A") ? (transcriptLangB.value || langInput.value) : (transcriptLangA.value || langInput.value);
+      const messageData = { user: user.value, text: chatInput.value.trim(), lang: langInput.value || "", targetLang: targetName || "", timestamp: Date.now() };
+      socket.emit("chat message", messageData);
+      chatInput.value = "";
+      chatInput.focus();
+    }
+  });
+
+  socket.on("chat message", function(msg){
+    let me = msg.user === "User B";
+    let group = document.createElement("div");
+    group.className = "bubbleGroup" + (me ? " me" : "");
+    let row = document.createElement("div");
+    row.className = "bubble-row";
+    let name = document.createElement("div");
+    name.className = "bubble-user";
+    name.innerText = msg.user;
+    let bubble = document.createElement("div");
+    bubble.className = "chat-bubble";
+    bubble.innerText = msg.text;
+    if (msg.translatedText && msg.translatedText !== msg.text) {
+      let tr = document.createElement("span");
+      tr.className = "chat-translation";
+      tr.innerText = "➝ " + msg.translatedText;
+      bubble.appendChild(tr);
+    }
+    if(me) {
+      row.appendChild(bubble);
+      row.appendChild(name);
+    } else {
+      row.appendChild(name);
+      row.appendChild(bubble);
+    }
+    group.appendChild(row);
+    messages.appendChild(group);
+    messages.scrollTop = messages.scrollHeight;
+  });
+
+  // Video / WebRTC
+  let localStream;
+  let peerConnection;
+  const config = { iceServers: [{ urls: "stun:stun.l.google.com:19302" }] };
+  try {
+    localStream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+    document.getElementById("localVideo").srcObject = localStream;
+  } catch (err) {
+    console.warn('getUserMedia error', err);
+  }
+
+  toggleAudioBtn.onclick = () => {
+    if (!localStream) return;
+    const audioTrack = localStream.getAudioTracks()[0];
+    audioTrack.enabled = !audioTrack.enabled;
+    toggleAudioBtn.textContent = audioTrack.enabled ? "Mute Mic" : "Unmute Mic";
+  };
+  toggleVideoBtn.onclick = () => {
+    if (!localStream) return;
+    const videoTrack = localStream.getVideoTracks()[0];
+    videoTrack.enabled = !videoTrack.enabled;
+    document.getElementById("localVideo").style.opacity = videoTrack.enabled ? 1 : 0.16;
+    toggleVideoBtn.textContent = videoTrack.enabled ? "Hide Video" : "Show Video";
+  };
+
+  function createPeerConnection(){
+    peerConnection = new RTCPeerConnection(config);
+    if (localStream) localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+    peerConnection.ontrack = (event) => { document.getElementById("remoteVideo").srcObject = event.streams[0]; };
+    peerConnection.onicecandidate = (event) => { if(event.candidate) socket.emit("candidate", event.candidate); };
+  }
+
+  socket.on("user-joined", async () => {
+    createPeerConnection();
+    const offer = await peerConnection.createOffer();
+    await peerConnection.setLocalDescription(offer);
+    socket.emit("offer", offer);
+  });
+  socket.on("offer", async (offer) => {
+    createPeerConnection();
+    await peerConnection.setRemoteDescription(offer);
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
+    socket.emit("answer", answer);
+  });
+  socket.on("answer", async (answer) => { await peerConnection.setRemoteDescription(answer); });
+  socket.on("candidate", async (candidate) => { await peerConnection.addIceCandidate(candidate); });
+
+  socket.emit("user-joined");
+
+  // Speech recognition for transcripts — emits language code for chosen transcript language
+  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+    recognition.onresult = (event) => {
+      let transcript = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        transcript += event.results[i][0].transcript;
+      }
+      // send chosen transcript language code for server (but server will be tolerant)
+      const chosenTransLang = (user.value === "User A") ? getLangCodeFromInput(transcriptLangA.value) : getLangCodeFromInput(transcriptLangB.value);
+      socket.emit("speech", { user: user.value, text: transcript, lang: chosenTransLang, timestamp: Date.now() });
+      if (user.value === "User A")
+        transcriptA.querySelector('.transOrig').innerText = "User A Transcript: " + transcript;
+      else
+        transcriptB.querySelector('.transOrig').innerText = "User B Transcript: " + transcript;
+    };
+    recognition.onend = () => { recognition.start(); };
+    recognition.onerror = (event) => {
+      if (event.error === 'network' || event.error === 'no-speech' || event.error === 'aborted') {
+        recognition.stop();
+        setTimeout(() => recognition.start(), 500);
+      }
+    };
+    recognition.start();
+  }
+
+  // show original and translated transcript both from server
+  socket.on("speech", (data) => {
+    if (data.user === "User A") {
+      transcriptA.querySelector('.transOrig').innerText = "User A Transcript: " + data.text;
+      transUserATrans.innerText = (data.translatedText && data.translatedText !== data.text) ? "➝ " + data.translatedText : "";
+    } else {
+      transcriptB.querySelector('.transOrig').innerText = "User B Transcript: " + data.text;
+      transUserBTrans.innerText = (data.translatedText && data.translatedText !== data.text) ? "➝ " + data.translatedText : "";
+    }
+  });
+};
+</script>
+</body>
+</html>

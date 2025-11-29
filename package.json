@@ -1,0 +1,21 @@
+{
+  "name": "livelingo-realtime",
+  "version": "1.0.0",
+  "description": "LiveLingo RealTime \u2014 real-time transcripts & translation demo (Node.js + Socket.io)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^5.1.0",
+    "node-fetch": "^2.7.0",
+    "socket.io": "^4.8.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ommane2273/LiveLingo-Realtime.git"
+  }
+}
